@@ -2,7 +2,7 @@
 """
 List available handoff documents in the current project.
 
-Searches for handoff documents in .claude/handoffs/ and displays:
+Searches for handoff documents in .agents/handoffs/ (or .claude/handoffs/ fallback) and displays:
 - Filename with date
 - Title extracted from document
 - Status (if marked complete)
@@ -17,6 +17,15 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def get_handoffs_dir(project_path: str) -> Path:
+    """Return .agents/handoffs/ if .agents/ exists, else .claude/handoffs/."""
+    agents_dir = Path(project_path) / ".agents" / "handoffs"
+    claude_dir = Path(project_path) / ".claude" / "handoffs"
+    if agents_dir.exists() or (Path(project_path) / ".agents").exists():
+        return agents_dir
+    return claude_dir
 
 
 def extract_title(filepath: Path) -> str:
@@ -66,7 +75,7 @@ def parse_date_from_filename(filename: str) -> datetime | None:
 
 def list_handoffs(project_path: str) -> list[dict]:
     """List all handoff documents in a project."""
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    handoffs_dir = get_handoffs_dir(project_path)
 
     if not handoffs_dir.exists():
         return []
@@ -103,11 +112,13 @@ def main():
     handoffs = list_handoffs(project_path)
 
     if not handoffs:
-        print(f"No handoffs found in {project_path}/.claude/handoffs/")
+        handoffs_dir = get_handoffs_dir(project_path)
+        print(f"No handoffs found in {handoffs_dir}")
         print("\nTo create a handoff, run: python create_handoff.py [task-slug]")
         return
 
-    print(f"Found {len(handoffs)} handoff(s) in {project_path}/.claude/handoffs/\n")
+    handoffs_dir = get_handoffs_dir(project_path)
+    print(f"Found {len(handoffs)} handoff(s) in {handoffs_dir}\n")
     print("-" * 80)
 
     for h in handoffs:

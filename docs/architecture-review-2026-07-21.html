@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Architecture review — .skills-manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .shallow { background: linear-gradient(135deg, #f8fafc, #e2e8f0); }
+      .arrow-head { fill: #334155; }
+      .leak-head { fill: #dc2626; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans antialiased">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-16">
+
+      <!-- ===================== HEADER ===================== -->
+      <header class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h1 class="text-3xl font-serif font-bold tracking-tight">.skills-manager — architecture review</h1>
+          <time class="text-sm text-slate-400 font-mono">2026-07-21</time>
+        </div>
+        <div class="flex gap-4 text-xs uppercase tracking-wider text-slate-500">
+          <span><span class="inline-block w-3 h-3 border border-slate-700 bg-white align-middle mr-1"></span> module</span>
+          <span><span class="inline-block w-6 h-0 border-t-2 border-dashed border-slate-400 align-middle mr-1"></span> seam</span>
+          <span><span class="inline-block w-3 h-0 border-t-2 border-red-600 align-middle mr-1"></span> leakage</span>
+          <span><span class="inline-block w-3 h-3 border border-slate-700 deep align-middle mr-1"></span> deep module</span>
+        </div>
+        <hr class="border-slate-200" />
+      </header>
+
+      <!-- ===================== CANDIDATES ===================== -->
+      <section id="candidates" class="space-y-14">
+
+        <!-- ---- CANDIDATE 1 ---- -->
+        <article class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-serif font-bold">Deepen the Tool Config Registry</h2>
+              <p class="text-sm text-slate-500 mt-1">config.json.tools</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">Strong</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">local-substitutable</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Before</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- 29 repeated entries -->
+                  <rect x="10" y="10" width="360" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="20" y="26" font-size="9" font-family="monospace" fill="#475569">cursor</text>
+                  <text x="90" y="26" font-size="8" font-family="monospace" fill="#94a3b8">enabled, detected, skills_path, config_path</text>
+
+                  <rect x="10" y="38" width="360" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="20" y="54" font-size="9" font-family="monospace" fill="#475569">claude-code</text>
+                  <text x="115" y="54" font-size="8" font-family="monospace" fill="#94a3b8">enabled, detected, skills_path, config_path</text>
+
+                  <rect x="10" y="66" width="360" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="20" y="82" font-size="9" font-family="monospace" fill="#475569">opencode</text>
+                  <text x="100" y="82" font-size="8" font-family="monospace" fill="#94a3b8">enabled, detected, skills_path, config_path</text>
+
+                  <!-- 16 more hidden lines visual -->
+                  <rect x="10" y="94" width="360" height="80" rx="0" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+                  <text x="190" y="135" font-size="12" font-family="monospace" fill="#94a3b8" text-anchor="middle">× 16 more</text>
+
+                  <!-- 10 visible tail -->
+                  <rect x="10" y="178" width="360" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="20" y="194" font-size="9" font-family="monospace" fill="#475569">windsurf</text>
+                  <text x="100" y="194" font-size="8" font-family="monospace" fill="#94a3b8">enabled, detected, skills_path, config_path</text>
+
+                  <rect x="10" y="206" width="360" height="24" rx="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="20" y="222" font-size="9" font-family="monospace" fill="#94a3b8">...</text>
+
+                  <!-- callout: detected always = enabled -->
+                  <rect x="60" y="245" width="280" height="30" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+                  <text x="200" y="263" font-size="9" font-family="sans-serif" fill="#dc2626" text-anchor="middle">`detected` always equals `enabled` — dead field</text>
+
+                  <!-- leakage arrow -->
+                  <line x1="190" y1="272" x2="190" y2="284" stroke="#dc2626" stroke-width="1.5"/>
+                  <polygon points="190,288 186,280 194,280" class="leak-head"/>
+                </svg>
+              </div>
+            </div>
+            <!-- After -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">After</div>
+              <div class="relative h-[320px] p-2">
+                <!-- Deep single array -->
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <rect x="10" y="10" width="360" height="170" rx="8" stroke="#1e293b" stroke-width="2" fill="#0f172a"/>
+                  <text x="30" y="35" font-size="13" font-family="monospace" font-weight="bold" fill="#e2e8f0">tools</text>
+                  <text x="30" y="55" font-size="10" font-family="monospace" fill="#64748b">Array&lt;ToolConfig&gt;</text>
+
+                  <rect x="30" y="70" width="320" height="24" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="86" font-size="9" font-family="monospace" fill="#94a3b8">{ name: "cursor", path: "~/.cursor", enabled: true }</text>
+
+                  <rect x="30" y="98" width="320" height="24" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="114" font-size="9" font-family="monospace" fill="#94a3b8">{ name: "claude-code", path: "~/.claude", enabled: true }</text>
+
+                  <!-- repeat indicator -->
+                  <rect x="30" y="126" width="320" height="20" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="190" y="139" font-size="9" font-family="monospace" fill="#64748b" text-anchor="middle">23 more entries</text>
+
+                  <rect x="30" y="150" width="320" height="24" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="166" font-size="9" font-family="monospace" fill="#94a3b8">{ name: "windsurf", path: "~/.windsurf", enabled: false }</text>
+
+                  <!-- computed derived fields -->
+                  <line x1="190" y1="180" x2="190" y2="210" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="4 4"/>
+                  <text x="60" y="228" font-size="9" font-family="monospace" fill="#16a34a">skills_path = path + "/skills"</text>
+                  <text x="60" y="244" font-size="9" font-family="monospace" fill="#16a34a">config_path = path</text>
+                  <text x="60" y="260" font-size="9" font-family="monospace" fill="#16a34a">detected = enabled</text>
+
+                  <!-- interface size indicator -->
+                  <rect x="270" y="216" width="80" height="16" rx="3" fill="#166534" opacity="0.3"/>
+                  <text x="310" y="228" font-size="8" font-family="monospace" fill="#4ade80" text-anchor="middle">3 fields → 4</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Files</h4>
+              <ul class="font-mono text-xs space-y-0.5 text-slate-600">
+                <li><code>config.json:4-178</code></li>
+                <li><code>scripts/sync-skills.sh</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Problem</h4>
+              <p class="text-slate-700 text-xs">Interface (4 properties × 29 entries) is nearly as wide as the data it describes — <span class="italic">shallow</span>. `detected` is always coupled to `enabled`. skills_path is derivable from config_path. Every entry repeats the same 4-field pattern with no computed behaviour.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Solution</h4>
+              <p class="text-slate-700 text-xs">Replace the dict of 29 tool objects with an array of <code class="text-xs">ToolConfig {name, path, enabled}</code>. Derive <code>skills_path</code>, <code>config_path</code>, and <code>detected</code> as computed fields. The sync script reads the same seam — no changes needed at call sites.</p>
+            </div>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+            <li><strong class="text-slate-800">Leverage:</strong> one interface change (add a computed field) propagates to 29 entries automatically</li>
+            <li><strong class="text-slate-800">Locality:</strong> path convention lives in one place — the reader/resolver — not repeated 29 times</li>
+            <li><strong class="text-slate-800">Interface shrinks:</strong> 4 props → 3 per entry; ~100 lines → ~35 lines</li>
+            <li><strong class="text-slate-800">Test surface:</strong> a single small test validates the resolution; old config readers test themselves</li>
+          </ul>
+        </article>
+
+        <!-- ---- CANDIDATE 2 ---- -->
+        <article class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-serif font-bold">Consolidate Script Boilerplate into a Shared Module</h2>
+              <p class="text-sm text-slate-500 mt-1">scripts/resolve-config.sh · scripts/sync-skills.sh · scripts/check-secrets.sh</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Before</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- Three isolated boxes -->
+                  <rect x="20" y="20" width="340" height="60" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="45" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">resolve-config.sh</text>
+                  <text x="40" y="65" font-size="9" font-family="monospace" fill="#94a3b8">ROOT/CONFIG setup</text>
+                  <text x="200" y="65" font-size="9" font-family="monospace" fill="#94a3b8">.env loading</text>
+                  <text x="40" y="80" font-size="9" font-family="monospace" fill="#94a3b8">re.sub(${VAR}) → repeated here</text>
+
+                  <rect x="20" y="100" width="340" height="60" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="125" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">sync-skills.sh</text>
+                  <text x="200" y="125" font-size="9" font-family="monospace" fill="#94a3b8">ROOT/CONFIG setup</text>
+                  <text x="200" y="140" font-size="9" font-family="monospace" fill="#94a3b8">.env loading</text>
+                  <text x="40" y="155" font-size="9" font-family="monospace" fill="#94a3b8">re.sub(${VAR}) → repeated here</text>
+
+                  <rect x="20" y="180" width="340" height="40" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="205" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">check-secrets.sh</text>
+                  <text x="200" y="205" font-size="9" font-family="monospace" fill="#94a3b8">ROOT/CONFIG setup</text>
+
+                  <!-- Duplication arrows -->
+                  <line x1="190" y1="80" x2="190" y2="100" stroke="#dc2626" stroke-width="1" stroke-dasharray="3 3"/>
+                  <line x1="190" y1="160" x2="190" y2="180" stroke="#dc2626" stroke-width="1" stroke-dasharray="3 3"/>
+
+                  <text x="190" y="238" font-size="10" font-family="monospace" fill="#dc2626" text-anchor="middle">3× duplicated ROOT/CONFIG · 2× re.sub(${VAR}) · 2× .env loading</text>
+
+                  <!-- Count callout -->
+                  <rect x="80" y="255" width="220" height="22" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+                  <text x="190" y="270" font-size="10" font-family="sans-serif" fill="#dc2626" text-anchor="middle">~26 lines duplicated across 236 total</text>
+                </svg>
+              </div>
+            </div>
+            <!-- After -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">After</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- Shared lib -->
+                  <rect x="20" y="10" width="340" height="80" rx="8" stroke="#1e293b" stroke-width="2" fill="#0f172a"/>
+                  <text x="40" y="35" font-size="12" font-family="monospace" font-weight="bold" fill="#e2e8f0">scripts/lib/common.sh</text>
+                  <text x="40" y="55" font-size="9" font-family="monospace" fill="#94a3b8">resolve_root() · load_env() · substitute_vars()</text>
+                  <text x="40" y="70" font-size="9" font-family="monospace" fill="#94a3b8">resolve_config() → validated JSON dict</text>
+
+                  <!-- consumers -->
+                  <line x1="190" y1="90" x2="190" y2="112" stroke="#4ade80" stroke-width="1.5"/>
+                  <rect x="20" y="112" width="340" height="44" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="135" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">resolve-config.sh</text>
+                  <text x="220" y="135" font-size="9" font-family="monospace" fill="#16a34a">source common.sh</text>
+                  <text x="40" y="150" font-size="9" font-family="monospace" fill="#94a3b8">→ only its unique logic (--validate, --in-place)</text>
+
+                  <line x1="190" y1="156" x2="190" y2="168" stroke="#4ade80" stroke-width="1.5"/>
+                  <rect x="20" y="168" width="340" height="44" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="191" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">sync-skills.sh</text>
+                  <text x="190" y="191" font-size="9" font-family="monospace" fill="#16a34a">source common.sh</text>
+                  <text x="40" y="206" font-size="9" font-family="monospace" fill="#94a3b8">→ only its unique logic (walk, rsync)</text>
+
+                  <line x1="190" y1="212" x2="190" y2="224" stroke="#4ade80" stroke-width="1.5"/>
+                  <rect x="20" y="224" width="340" height="44" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="40" y="247" font-size="11" font-family="monospace" font-weight="bold" fill="#475569">check-secrets.sh</text>
+                  <text x="200" y="247" font-size="9" font-family="monospace" fill="#16a34a">source common.sh</text>
+                  <text x="40" y="262" font-size="9" font-family="monospace" fill="#94a3b8">→ only its unique logic (grep patterns)</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Files</h4>
+              <ul class="font-mono text-xs space-y-0.5 text-slate-600">
+                <li><code>scripts/resolve-config.sh</code></li>
+                <li><code>scripts/sync-skills.sh</code></li>
+                <li><code>scripts/check-secrets.sh</code></li>
+                <li class="text-green-700"><em>new:</em> <code>scripts/lib/common.sh</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Problem</h4>
+              <p class="text-slate-700 text-xs">Three scripts re-implement the same ROOT/CONFIG resolution, .env loading, and <code class="text-xs">${VAR}</code> substitution independently. No shared <span class="italic">module</span> — each script's interface (flags) is simple but the implementation repeats ~26 lines. A bug in the substitution logic must be fixed in two places.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Solution</h4>
+              <p class="text-slate-700 text-xs">Extract a <code class="text-xs">scripts/lib/common.sh</code> module providing <code class="text-xs">resolve_root()</code>, <code class="text-xs">load_env()</code>, <code class="text-xs">substitute_vars()</code>, and a composite <code class="text-xs">resolve_config()</code> that returns a validated JSON dict. Each script <code class="text-xs">source</code>s the shared module and keeps only its unique logic.</p>
+            </div>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+            <li><strong class="text-slate-800">Locality:</strong> fix the env-substitution bug once, not twice</li>
+            <li><strong class="text-slate-800">Leverage:</strong> add a flag to <code class="text-xs">resolve_config()</code> and every script gets it</li>
+            <li><strong class="text-slate-800">Interface shrinks:</strong> each script drops ~8 lines; one shared module at ~15 lines</li>
+            <li><strong class="text-slate-800">Test surface:</strong> a single test file validates <code class="text-xs">common.sh</code> across all consumers</li>
+          </ul>
+        </article>
+
+        <!-- ---- CANDIDATE 3 ---- -->
+        <article class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-serif font-bold">Delete the Orphan Category System</h2>
+              <p class="text-sm text-slate-500 mt-1">skills/apple/ · skills/mlops/ · skills/creative/ … + 17 more</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">Strong</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Before</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- Category dir with symlinks -->
+                  <rect x="10" y="5" width="360" height="55" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="20" y="25" font-size="10" font-family="monospace" font-weight="bold" fill="#475569">skills/apple/</text>
+                  <text x="150" y="25" font-size="8" font-family="monospace" fill="#94a3b8">DESCRIPTION.md</text>
+
+                  <rect x="20" y="35" width="120" height="16" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                  <text x="80" y="47" font-size="8" font-family="monospace" fill="#64748b" text-anchor="middle">apple-notes → ..</text>
+
+                  <rect x="150" y="35" width="100" height="16" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                  <text x="200" y="47" font-size="8" font-family="monospace" fill="#64748b" text-anchor="middle">findmy → ..</text>
+
+                  <rect x="260" y="35" width="90" height="16" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                  <text x="305" y="47" font-size="8" font-family="monospace" fill="#64748b" text-anchor="middle">imessage → ..</text>
+
+                  <!-- Sync script bypass arrow -->
+                  <rect x="10" y="72" width="360" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="190" y="92" font-size="10" font-family="monospace" fill="#94a3b8" text-anchor="middle">sync-skills.sh resolves realpath, flattens → ignores categories</text>
+
+                  <!-- More category boxes -->
+                  <rect x="10" y="112" width="175" height="40" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="20" y="132" font-size="9" font-family="monospace" font-weight="bold" fill="#475569">skills/creative/</text>
+                  <text x="20" y="146" font-size="8" font-family="monospace" fill="#94a3b8">21 symlinks · DESCRIPTION.md</text>
+
+                  <rect x="195" y="112" width="175" height="40" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="205" y="132" font-size="9" font-family="monospace" font-weight="bold" fill="#475569">skills/github/</text>
+                  <text x="205" y="146" font-size="8" font-family="monospace" fill="#94a3b8">6 symlinks · DESCRIPTION.md</text>
+
+                  <rect x="10" y="162" width="175" height="40" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="20" y="182" font-size="9" font-family="monospace" font-weight="bold" fill="#475569">skills/productivity/</text>
+                  <text x="20" y="196" font-size="8" font-family="monospace" fill="#94a3b8">9 symlinks · DESCRIPTION.md</text>
+
+                  <rect x="195" y="162" width="175" height="40" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="205" y="182" font-size="9" font-family="monospace" font-weight="bold" fill="#475569">skills/software-development/</text>
+                  <text x="205" y="196" font-size="8" font-family="monospace" fill="#94a3b8">12 symlinks · NO DESCRIPTION</text>
+
+                  <!-- Total count -->
+                  <rect x="40" y="220" width="300" height="24" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+                  <text x="190" y="236" font-size="10" font-family="sans-serif" fill="#dc2626" text-anchor="middle">20 category containers · 80 symlinks · zero code reads any of them</text>
+
+                  <!-- Deletion test arrow -->
+                  <line x1="190" y1="248" x2="190" y2="260" stroke="#4ade80" stroke-width="2"/>
+                  <text x="190" y="280" font-size="11" font-family="monospace" fill="#16a34a" text-anchor="middle">Deletion test: complexity vanishes → pure pass-through</text>
+                </svg>
+              </div>
+            </div>
+            <!-- After -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">After</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- Flat skills dir -->
+                  <rect x="10" y="5" width="360" height="260" rx="8" stroke="#1e293b" stroke-width="2" fill="#0f172a"/>
+                  <text x="30" y="30" font-size="13" font-family="monospace" font-weight="bold" fill="#e2e8f0">skills/</text>
+                  <text x="100" y="30" font-size="10" font-family="monospace" fill="#64748b">(153 unique skill dirs, each with SKILL.md)</text>
+
+                  <!-- Skill entries -->
+                  <rect x="30" y="45" width="320" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="59" font-size="9" font-family="monospace" fill="#94a3b8">apple-notes/</text>
+                  <text x="160" y="59" font-size="8" font-family="monospace" fill="#64748b">SKILL.md</text>
+
+                  <rect x="30" y="68" width="320" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="82" font-size="9" font-family="monospace" fill="#94a3b8">apple-reminders/</text>
+                  <text x="170" y="82" font-size="8" font-family="monospace" fill="#64748b">SKILL.md</text>
+
+                  <rect x="30" y="91" width="320" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="105" font-size="9" font-family="monospace" fill="#94a3b8">imagegen/</text>
+                  <text x="130" y="105" font-size="8" font-family="monospace" fill="#64748b">SKILL.md · scripts/ · assets/ · references/</text>
+
+                  <rect x="30" y="114" width="320" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="128" font-size="9" font-family="monospace" fill="#94a3b8">improve-codebase-architecture/</text>
+                  <text x="230" y="128" font-size="8" font-family="monospace" fill="#64748b">SKILL.md · LANGUAGE.md</text>
+
+                  <rect x="30" y="137" width="320" height="20" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+                  <text x="42" y="151" font-size="9" font-family="monospace" fill="#94a3b8">mcp-builder/</text>
+                  <text x="140" y="151" font-size="8" font-family="monospace" fill="#64748b">SKILL.md · meta.json · references/</text>
+
+                  <!-- filler -->
+                  <text x="190" y="195" font-size="10" font-family="monospace" fill="#64748b" text-anchor="middle">148 more skill directories</text>
+                  <text x="190" y="213" font-size="10" font-family="monospace" fill="#64748b" text-anchor="middle">all flat, all discoverable by SKILL.md walk</text>
+
+                  <!-- Tags replacement -->
+                  <rect x="30" y="230" width="320" height="24" rx="4" fill="#166534" opacity="0.3"/>
+                  <text x="190" y="245" font-size="9" font-family="monospace" fill="#4ade80" text-anchor="middle">metadata/tags in YAML frontmatter replaces category dirs</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Files</h4>
+              <ul class="font-mono text-xs space-y-0.5 text-slate-600">
+                <li><code>skills/apple/</code> · <code>skills/creative/</code> · 18 more category dirs</li>
+                <li>80 symlinks, 20 DESCRIPTION.md files</li>
+                <li>3 empty dirs: <code>file-organization/</code>, <code>last30days-skill/</code>, <code>write-a-skill/</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Problem</h4>
+              <p class="text-slate-700 text-xs">The category system (DESCRIPTION.md + symlinks) has zero consumers. The sync script flattens by realpath. No tool reads DESCRIPTION.md. No tool groups skills by category. The <span class="italic">deletion test</span> is decisive: removing it all makes no behaviour vanish — it was a pass-through. The interface (symlink + DESCRIPTION.md format) was never used.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Solution</h4>
+              <p class="text-slate-700 text-xs">Delete all category directories, their symlinks, and DESCRIPTION.md files. Replace with <code class="text-xs">metadata/tags</code> in each SKILL.md frontmatter for any future grouping need. Category information becomes <span class="italic">data</span> (in the skill itself) rather than <span class="italic">structure</span> (a directory hierarchy that nothing reads).</p>
+            </div>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+            <li><strong class="text-slate-800">Locality:</strong> each skill's category metadata lives inside its own SKILL.md</li>
+            <li><strong class="text-slate-800">Leverage:</strong> a tag-based query replaces browsing nested directories — more powerful, less structure</li>
+            <li><strong class="text-slate-800">Delete ~100 files</strong> (20 DESCRIPTION.md + 80 symlinks + 3 empty dirs)</li>
+            <li><strong class="text-slate-800">Removes confusion:</strong> no more "why does mlops/ have subdirs with SKILL.md but apple/ has symlinks?"</li>
+          </ul>
+        </article>
+
+        <!-- ---- CANDIDATE 4 ---- -->
+        <article class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-serif font-bold">Complete the Marketplace Pipeline Seam</h2>
+              <p class="text-sm text-slate-500 mt-1">config.json.marketplace_sources → cache/ → (nowhere)</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">local-substitutable</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Before</div>
+              <div class="relative h-[320px]">
+                <pre class="mermaid">
+                  flowchart LR
+                    C[config.json<br/>marketplace_sources] -->|feeds| FC[?? external downloader]
+                    FC -->|writes| SK[cache/marketplace-skills.json<br/>440KB]
+                    SK -.->|NO CONSUMER| GHOST[ ]
+
+                    style C fill:#f1f5f9,stroke:#cbd5e1
+                    style FC fill:#fef2f2,stroke:#dc2626,stroke-dasharray:4 4
+                    style SK fill:#fef2f2,stroke:#dc2626
+                    style GHOST fill:#fff,stroke:#fff
+
+                    classDef leak fill:#fef2f2,stroke:#dc2626;
+                </pre>
+              </div>
+            </div>
+            <!-- After -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">After</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <rect x="10" y="10" width="360" height="220" rx="8" stroke="#1e293b" stroke-width="2" fill="#0f172a"/>
+
+                  <text x="30" y="35" font-size="12" font-family="monospace" font-weight="bold" fill="#e2e8f0">Marketplace Pipeline</text>
+
+                  <!-- Port at top -->
+                  <rect x="30" y="50" width="320" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+                  <text x="190" y="69" font-size="9" font-family="monospace" fill="#94a3b8" text-anchor="middle">Port: SourceProvider { id, name, fetch(): Promise&lt;Skill[]&gt; }</text>
+
+                  <!-- Source adapters -->
+                  <rect x="40" y="92" width="145" height="30" rx="4" fill="#334155" stroke="#475569" stroke-width="1"/>
+                  <text x="112" y="111" font-size="9" font-family="monospace" fill="#e2e8f0" text-anchor="middle">GitHubSourceAdapter</text>
+
+                  <rect x="195" y="92" width="145" height="30" rx="4" fill="#334155" stroke="#475569" stroke-width="1"/>
+                  <text x="267" y="111" font-size="9" font-family="monospace" fill="#e2e8f0" text-anchor="middle">WebSourceAdapter</text>
+
+                  <!-- Cache layer -->
+                  <rect x="40" y="135" width="300" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+                  <text x="190" y="154" font-size="9" font-family="monospace" fill="#94a3b8" text-anchor="middle">cache: ReadThroughCache { ttl, invalidate }</text>
+
+                  <!-- Install action -->
+                  <rect x="80" y="178" width="220" height="30" rx="4" fill="#166534" stroke="#4ade80" stroke-width="1"/>
+                  <text x="190" y="197" font-size="9" font-family="monospace" fill="#4ade80" text-anchor="middle">install(skill) → writes SKILL.md + meta.json</text>
+
+                  <!-- Results -->
+                  <text x="190" y="225" font-size="9" font-family="monospace" fill="#64748b" text-anchor="middle">meta.json provenance is auto-generated at install time</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Files</h4>
+              <ul class="font-mono text-xs space-y-0.5 text-slate-600">
+                <li><code>config.json:194-212</code></li>
+                <li><code>cache/marketplace-skills.json</code></li>
+                <li><code>cache/marketplace-skill-descriptions.json</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Problem</h4>
+              <p class="text-slate-700 text-xs">The marketplace sub-system has half an <span class="italic">interface</span> — source configs in <code class="text-xs">config.json</code> and cache files on disk — but no <span class="italic">implementation</span> connects them. The cache is 440KB of orphan data. There is no install command, no provenance writer, no fetch refresh. 144/145 skills lack <code class="text-xs">meta.json</code> because no tool generates it.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Solution</h4>
+              <p class="text-slate-700 text-xs">Define a <code class="text-xs">SourceProvider</code> port at the seam. Implement two adapters: <code class="text-xs">GitHubSourceAdapter</code> and <code class="text-xs">WebSourceAdapter</code>. Add a <code class="text-xs">ReadThroughCache</code> with TTL. Wire an <code class="text-xs">install</code> command that writes SKILL.md + meta.json. The cache data becomes consumable; the orphan pipeline goes productive.</p>
+            </div>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+            <li><strong class="text-slate-800">Two adapters justify the seam:</strong> GitHub + web sources are genuinely different providers</li>
+            <li><strong class="text-slate-800">Leverage:</strong> add a third source provider — everything else stays the same</li>
+            <li><strong class="text-slate-800">Locality:</strong> sourcing logic, caching, install, and provenance all live behind one port</li>
+            <li><strong class="text-slate-800">Fills the meta.json gap:</strong> provenance is auto-written at install, not a deferred manual step</li>
+          </ul>
+        </article>
+
+        <!-- ---- CANDIDATE 5 ---- -->
+        <article class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-serif font-bold">Surface the Sync Flatten Semantics</h2>
+              <p class="text-sm text-slate-500 mt-1">scripts/sync-skills.sh basename dedup</p>
+            </div>
+            <div class="flex gap-2">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Before -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Before</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <!-- Two skills with same basename -->
+                  <rect x="10" y="10" width="360" height="50" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="20" y="30" font-size="10" font-family="monospace" fill="#475569">skills/mlops/inference/vllm/</text>
+                  <text x="20" y="48" font-size="8" font-family="monospace" fill="#94a3b8">SKILL.md — inference server skill</text>
+
+                  <rect x="10" y="65" width="360" height="50" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+                  <text x="20" y="85" font-size="10" font-family="monospace" fill="#475569">skills/some-other-category/vllm/</text>
+                  <text x="20" y="103" font-size="8" font-family="monospace" fill="#94a3b8">SKILL.md — different skill, same dir name</text>
+
+                  <!-- Sync runs dedup -->
+                  <rect x="50" y="125" width="280" height="30" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+                  <text x="190" y="144" font-size="10" font-family="monospace" fill="#dc2626" text-anchor="middle">sync-skills.sh: real_dirs["vllm"] → last walk wins</text>
+
+                  <!-- Destination -->
+                  <rect x="40" y="165" width="300" height="70" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 3"/>
+                  <text x="190" y="186" font-size="10" font-family="monospace" fill="#64748b" text-anchor="middle">~/.claude/skills/vllm/</text>
+                  <text x="190" y="206" font-size="9" font-family="monospace" fill="#dc2626" text-anchor="middle">⚠ One skill silently overwrites the other</text>
+                  <text x="190" y="222" font-size="9" font-family="monospace" fill="#94a3b8" text-anchor="middle">No warning. No error. Last directory wins by basename.</text>
+
+                  <!-- Byproduct arrow -->
+                  <line x1="190" y1="120" x2="190" y2="125" stroke="#dc2626" stroke-width="1.5"/>
+                </svg>
+              </div>
+            </div>
+            <!-- After -->
+            <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">After</div>
+              <div class="relative h-[320px]">
+                <svg viewBox="0 0 380 300" class="w-full h-full">
+                  <rect x="10" y="10" width="360" height="240" rx="8" stroke="#1e293b" stroke-width="2" fill="#0f172a"/>
+
+                  <text x="30" y="35" font-size="12" font-family="monospace" font-weight="bold" fill="#e2e8f0">Collector: unique skill walk</text>
+
+                  <rect x="30" y="52" width="320" height="28" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+                  <text x="190" y="70" font-size="9" font-family="monospace" fill="#94a3b8" text-anchor="middle">os.walk → os.path.realpath → group by basename</text>
+
+                  <!-- Collision detection -->
+                  <rect x="40" y="90" width="300" height="36" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+                  <text x="190" y="107" font-size="9" font-family="monospace" fill="#fbbf24" text-anchor="middle">⚠ Collision: basename "vllm" at 2 realpaths</text>
+                  <text x="190" y="120" font-size="8" font-family="monospace" fill="#fbbf24" text-anchor="middle">→ warn + pick first (or skip, or rename)</text>
+
+                  <!-- Resolution strategies -->
+                  <rect x="40" y="136" width="145" height="40" rx="4" fill="#166534" stroke="#4ade80" stroke-width="1"/>
+                  <text x="112" y="153" font-size="8" font-family="monospace" fill="#4ade80" text-anchor="middle">pick first</text>
+                  <text x="112" y="167" font-size="7" font-family="monospace" fill="#94a3b8" text-anchor="middle">documented, silent</text>
+
+                  <rect x="195" y="136" width="145" height="40" rx="4" fill="#166534" stroke="#4ade80" stroke-width="1"/>
+                  <text x="267" y="153" font-size="8" font-family="monospace" fill="#4ade80" text-anchor="middle">skip and warn</text>
+                  <text x="267" y="167" font-size="7" font-family="monospace" fill="#94a3b8" text-anchor="middle">safe by default</text>
+
+                  <rect x="40" y="186" width="145" height="40" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+                  <text x="112" y="203" font-size="8" font-family="monospace" fill="#fbbf24" text-anchor="middle">namespace prefix</text>
+                  <text x="112" y="217" font-size="7" font-family="monospace" fill="#94a3b8" text-anchor="middle">e.g. mlops-vllm</text>
+
+                  <rect x="195" y="186" width="145" height="40" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+                  <text x="267" y="203" font-size="8" font-family="monospace" fill="#fbbf24" text-anchor="middle">fail hard</text>
+                  <text x="267" y="217" font-size="7" font-family="monospace" fill="#94a3b8" text-anchor="middle">break, force rename</text>
+
+                  <text x="30" y="248" font-size="9" font-family="monospace" fill="#64748b">Deliberate choice, not a silent side effect.</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Files</h4>
+              <ul class="font-mono text-xs space-y-0.5 text-slate-600">
+                <li><code>scripts/sync-skills.sh:44-48</code></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Problem</h4>
+              <p class="text-slate-700 text-xs">The sync script's realpath flattening is a <span class="italic">seam</span> with implicit collision semantics: when two skills share a basename, the last <code class="text-xs">os.walk</code> entry silently overwrites the first. This is a correctness bug hidden by convention (naming uniqueness hasn't been enforced).</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-1">Solution</h4>
+              <p class="text-slate-700 text-xs">Surface collision handling as an explicit step in the walk. Choose a strategy: <code class="text-xs">pick-first</code> (current behaviour but logged), <code class="text-xs">skip-and-warn</code> (safe default), or <code class="text-xs">namespace-prefix</code>. Make the strategy configurable and document it in the <code class="text-xs">--help</code> output.</p>
+            </div>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+            <li><strong class="text-slate-800">Locality:</strong> collision logic lives in one place, not scattered across silent dest writes</li>
+            <li><strong class="text-slate-800">Leverage:</strong> once resolved, the collision rule applies uniformly to all 153 synced skills</li>
+            <li><strong class="text-slate-800">Prevents data loss:</strong> a silent overwrite today could destroy a skill; explicit handling surfaces it</li>
+            <li><strong class="text-slate-800">Test surface:</strong> one test with two colliding basenames validates the behaviour</li>
+          </ul>
+        </article>
+
+      </section>
+
+      <!-- ===================== TOP RECOMMENDATION ===================== -->
+      <section id="top-recommendation" class="space-y-4">
+        <hr class="border-slate-200" />
+        <h2 class="text-2xl font-serif font-bold">Top recommendation</h2>
+
+        <article class="rounded-xl border-2 border-emerald-600 bg-white p-6 space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="text-emerald-700 font-bold text-lg">1</span>
+            <div>
+              <h3 class="font-bold text-lg"><a href="#" onclick="document.getElementById('candidates').children[0].scrollIntoView({behavior:'smooth'}); return false" class="text-emerald-800 underline decoration-emerald-300 underline-offset-2 hover:decoration-emerald-600">Delete the Orphan Category System</a></h3>
+              <p class="text-slate-500 text-sm">Followed by: Deepen the Tool Config Registry</p>
+            </div>
+          </div>
+          <p class="text-slate-700">
+            The category system has zero consumers — the deletion test is unambiguous. Removing it eliminates <strong>~100 files</strong>, 80 symlinks that are never followed, and the confusion of "why do some skills nest and others symlink?" It's pure housekeeping with zero risk: nothing breaks because nothing reads them. The config registry deepening is a close second (it makes every future tool addition simpler), but the category system is the highest-leverage deletion because it removes an entire unused <span class="italic">interface</span> (the DESCRIPTION.md schema + symlink convention) that future explorers would otherwise waste time understanding.
+          </p>
+          <p class="text-xs text-slate-400">
+            Do the category cleanup first — it makes the remaining candidates easier to reason about by removing noise from the skills/ directory tree.
+          </p>
+        </article>
+      </section>
+
+      <footer class="text-xs text-slate-400 text-center pt-8 border-t border-slate-200">
+        Generated by improve-codebase-architecture skill · Glossary: <a href="#" class="underline">LANGUAGE.md</a> · No ADRs exist in this repo — all candidates are fresh observations.
+      </footer>
+
+    </main>
+  </body>
+</html>

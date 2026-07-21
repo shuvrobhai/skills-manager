@@ -2,6 +2,8 @@
 name: youtube-content
 description: "YouTube transcripts to summaries, threads, blogs."
 platforms: [linux, macos, windows]
+metadata:
+  tags: [media]
 ---
 
 # YouTube Content Tool

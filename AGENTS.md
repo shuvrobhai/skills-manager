@@ -7,9 +7,11 @@ Central skill library + sync config for 20+ AI coding agents. This is a data/con
 | Path | Purpose |
 |------|---------|
 | `config.json` | Master config (v2.1.0): tool paths, marketplace sources, preferences, auth |
-| `skills/` | ~170 skill directories, each with `SKILL.md` + optional scripts/references/templates |
+| `skills/` | ~150 flat skill directories, each with `SKILL.md` + optional scripts/references/templates |
 | `skills/_custom/` | Custom/local skills not from marketplace |
 | `cache/` | Marketplace index cache (auto-generated JSON) |
+| `docs/` | Architecture reviews and other documentation |
+| `scripts/lib/` | Shared bash library (`common.sh`) used by all scripts |
 
 ## Skill directory convention
 
@@ -19,7 +21,7 @@ Marketplace-installed skills also carry `meta.json` tracking origin/revision.
 
 ## Tools configured
 
-`config.json.tools` registers 20+ agents (opencode, claude-code, cursor, codex, hermes, gemini, etc.) with their individual `skills_path` and `config_path`. Enabled/disabled per-tool.
+`config.json.tools` is an array of `{name, path, enabled}` entries for 29 agents. `skills_path` is derived as `{path}/skills`; `config_path` is `{path}`. Enabled/disabled per-tool.
 
 ## Secrets warning
 

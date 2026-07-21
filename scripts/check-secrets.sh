@@ -7,8 +7,9 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CONFIG="$ROOT/config.json"
+source "$(dirname "$0")/lib/common.sh"
+resolve_root
+
 VERBOSE=false
 
 [[ "${1:-}" == "--verbose" ]] && VERBOSE=true

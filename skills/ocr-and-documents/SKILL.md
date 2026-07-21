@@ -6,6 +6,7 @@ author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
+  tags: [productivity, ocr, documents]
   hermes:
     tags: [PDF, Documents, Research, Arxiv, Text-Extraction, OCR]
     related_skills: [powerpoint]

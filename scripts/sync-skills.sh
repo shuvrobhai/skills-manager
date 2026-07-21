@@ -9,9 +9,10 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CONFIG="$ROOT/config.json"
-SKILLS_DIR="$ROOT/skills"
+source "$(dirname "$0")/lib/common.sh"
+resolve_root
+load_env
+
 DRY_RUN=false
 TARGET_TOOL=""
 EXCLUDE_PATTERNS=()
@@ -27,27 +28,26 @@ done
 
 [ -f "$CONFIG" ] || { echo "error: config.json not found at $CONFIG"; exit 1; }
 
-ENV_FILE="$ROOT/.env"
-[ -f "$ENV_FILE" ] && { set -a; . "$ENV_FILE"; set +a; }
+export DRY_RUN TARGET_TOOL EXCLUDE_PATTERNS
 
-python3 <<PYEOF
-import json, os, re, subprocess, sys
+resolve_config | python3 -c '
+import json, os, subprocess, sys
 
-SKILLS_DIR = os.environ.get('SKILLS_DIR', '$SKILLS_DIR')
-CONFIG = os.environ.get('CONFIG', '$CONFIG')
-DRY_RUN = os.environ.get('DRY_RUN', '$DRY_RUN').lower() == 'true'
-TARGET_TOOL = os.environ.get('TARGET_TOOL', '$TARGET_TOOL') or None
-EXCLUDE_PATTERNS = [p.lower() for p in os.environ.get('EXCLUDE_PATTERNS', '').split()] if os.environ.get('EXCLUDE_PATTERNS') else []
+SKILLS_DIR = os.environ["SKILLS_DIR"]
+DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
+TARGET_TOOL = os.environ.get("TARGET_TOOL") or None
+EXCLUDE_PATTERNS = [p.lower() for p in os.environ.get("EXCLUDE_PATTERNS", "").split()] if os.environ.get("EXCLUDE_PATTERNS") else []
+
+cfg = json.load(sys.stdin)
 
 # 1. Find all unique real skill directories
 real_dirs = {}
 for root, dirs, files in os.walk(SKILLS_DIR):
-    if 'SKILL.md' in files:
+    if "SKILL.md" in files:
         real = os.path.realpath(root)
         name = os.path.basename(real)
         real_dirs[name] = real
 
-# Sort and filter
 skill_names = sorted(real_dirs.keys())
 for p in EXCLUDE_PATTERNS:
     skill_names = [n for n in skill_names if p not in n.lower()]
@@ -58,38 +58,27 @@ if EXCLUDE_PATTERNS:
     print(f"  After exclusions: {len(skill_names)} skills")
 print()
 
-# 2. Load config and resolve env vars
-with open(CONFIG) as f:
-    content = f.read()
-
-def replace_env(m):
-    var = m.group(1)
-    val = os.environ.get(var)
-    return val if val is not None else m.group(0)
-
-resolved = re.sub(r'\$\{([^}]+)\}', replace_env, content)
-cfg = json.loads(resolved)
-
-# 3. Get enabled tools
+# 2. Get enabled tools
 tools = []
-for name, t in cfg.get('tools', {}).items():
-    if t.get('enabled') and t.get('skills_path'):
-        tools.append((name, os.path.expanduser(t['skills_path'])))
+for t in cfg.get("tools", []):
+    if t.get("enabled"):
+        path = os.path.expanduser(t["path"]) + "/skills"
+        tools.append((t["name"], path))
 
 if TARGET_TOOL:
     tools = [(n, p) for n, p in tools if n == TARGET_TOOL]
     if not tools:
-        print(f"error: no enabled tool named '{TARGET_TOOL}'")
+        print(f"error: no enabled tool named {TARGET_TOOL}")
         sys.exit(1)
 
 print(f"--- Enabled tools ({len(tools)}) ---")
 for name, path in tools:
-    print(f"  {name} → {path}")
+    print(f"  {name} \u2192 {path}")
 print()
 
-# 4. Sync
+# 3. Sync
 for tool_name, tool_path in tools:
-    print(f"--- {tool_name} → {tool_path} ---")
+    print(f"--- {tool_name} \u2192 {tool_path} ---")
     if not os.path.isdir(tool_path):
         print(f"  Creating {tool_path}")
         if not DRY_RUN:
@@ -113,4 +102,4 @@ for tool_name, tool_path in tools:
 
 print()
 print("--- Done ---")
-PYEOF
+'

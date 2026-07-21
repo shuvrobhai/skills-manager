@@ -41,6 +41,15 @@ def run_cmd(cmd: list[str], cwd: str = None) -> tuple[bool, str]:
         return False, ""
 
 
+def get_handoffs_dir(project_path: str) -> Path:
+    """Return .agents/handoffs/ if .agents/ exists, else .claude/handoffs/."""
+    agents_dir = Path(project_path) / ".agents" / "handoffs"
+    claude_dir = Path(project_path) / ".claude" / "handoffs"
+    if agents_dir.exists() or (Path(project_path) / ".agents").exists():
+        return agents_dir
+    return claude_dir
+
+
 def get_git_info(project_path: str) -> dict:
     """Gather git information from the project."""
     info = {
@@ -92,7 +101,7 @@ def get_git_info(project_path: str) -> dict:
 
 def find_previous_handoffs(project_path: str) -> list[dict]:
     """Find existing handoffs in the project."""
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    handoffs_dir = get_handoffs_dir(project_path)
     if not handoffs_dir.exists():
         return []
 
@@ -180,8 +189,8 @@ def generate_handoff(
 
     filename = f"{file_timestamp}-{slug}.md"
 
-    # Create handoffs directory
-    handoffs_dir = Path(project_path) / ".claude" / "handoffs"
+    # Create handoffs directory (always prefer .agents/)
+    handoffs_dir = Path(project_path) / ".agents" / "handoffs"
     handoffs_dir.mkdir(parents=True, exist_ok=True)
 
     filepath = handoffs_dir / filename

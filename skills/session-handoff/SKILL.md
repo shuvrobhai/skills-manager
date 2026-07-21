@@ -38,7 +38,7 @@ python scripts/create_handoff.py "auth-part-2" --continues-from 2024-01-15-auth.
 ```
 
 The script will:
-- Create `.claude/handoffs/` directory if needed
+- Create `.agents/handoffs/` directory if needed (falls back to `.claude/handoffs/` if only `.claude/` exists)
 - Generate timestamped filename
 - Pre-fill: timestamp, project path, git branch, recent commits, modified files
 - Add handoff chain links if continuing from previous
@@ -166,7 +166,9 @@ When resuming from a chain, read the most recent handoff first, then reference p
 
 ## Storage Location
 
-Handoffs are stored in: `.claude/handoffs/`
+Handoffs are stored in: `.agents/handoffs/` (if `.agents/` exists) or `.claude/handoffs/` (fallback)
+
+The create script always prefers `.agents/handoffs/`. The list/validate/staleness scripts search `.agents/` first, then fall back to `.claude/`.
 
 Naming convention: `YYYY-MM-DD-HHMMSS-[slug].md`
 
