@@ -8,7 +8,7 @@ Central skill library + sync config for 20+ AI coding agents. This is a data/con
 |------|---------|
 | `config.json` | Master config (v2.1.0): tool paths, marketplace sources, preferences, auth |
 | `skills/` | ~150 flat skill directories, each with `SKILL.md` + optional scripts/references/templates |
-| `skills/_custom/` | Custom/local skills not from marketplace (currently empty) |
+| `skills/_custom/` | Custom/local skills not from marketplace |
 | `cache/` | Marketplace index cache (auto-generated JSON) |
 | `docs/` | Architecture reviews and other documentation |
 | `scripts/lib/` | Shared bash library (`common.sh`) used by all scripts |
@@ -21,7 +21,7 @@ Marketplace-installed skills also carry `meta.json` tracking origin/revision.
 
 ## Tools configured
 
-`config.json.tools` is an array of `{name, path, enabled}` entries for 17 enabled agents. `skills_path` is derived as `{path}/skills`; `config_path` is `{path}`.
+`config.json.tools` is an array of `{name, path, enabled}` entries for 29 agents. `skills_path` is derived as `{path}/skills`; `config_path` is `{path}`. Enabled/disabled per-tool.
 
 ## Secrets warning
 
@@ -39,7 +39,7 @@ Cached in `cache/marketplace-skills.json` and `cache/marketplace-skill-descripti
 | Script | Purpose |
 |--------|---------|
 | `scripts/resolve-config.sh` | Substitute `${VAR}` placeholders in config.json from `.env` or environment. Supports `--validate` and `--in-place`. |
-| `scripts/sync-skills.sh` | Sync skills from this central repo to every enabled tool's `skills_path`. Supports `--dry-run`, `--tool <name>`, `--exclude <pattern>`. Auto-removes conflicting symlinks and warns on basename collisions. |
+| `scripts/sync-skills.sh` | Sync skills from this central repo to every enabled tool's `skills_path`. Supports `--dry-run`, `--tool <name>`, `--exclude <pattern>`. |
 | `scripts/check-secrets.sh` | Scan config.json for plaintext secrets that should be in `.env` instead. |
 
 ## Secrets

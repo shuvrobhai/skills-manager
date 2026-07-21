@@ -42,13 +42,10 @@ cfg = json.load(sys.stdin)
 
 # 1. Find all unique real skill directories
 real_dirs = {}
-collisions = []
 for root, dirs, files in os.walk(SKILLS_DIR):
     if "SKILL.md" in files:
         real = os.path.realpath(root)
         name = os.path.basename(real)
-        if name in real_dirs:
-            collisions.append((name, real_dirs[name], real))
         real_dirs[name] = real
 
 skill_names = sorted(real_dirs.keys())
@@ -59,12 +56,6 @@ print(f"--- Scanning skills ---")
 print(f"  Found {len(real_dirs)} unique skills")
 if EXCLUDE_PATTERNS:
     print(f"  After exclusions: {len(skill_names)} skills")
-if collisions:
-    print(f"  WARNING: {len(collisions)} basename collision(s) detected:")
-    for name, first, second in collisions:
-        print(f"    {name}:")
-        print(f"      1st: {first}")
-        print(f"      2nd: {second} (overwrites 1st)")
 print()
 
 # 2. Get enabled tools
@@ -92,18 +83,6 @@ for tool_name, tool_path in tools:
         print(f"  Creating {tool_path}")
         if not DRY_RUN:
             os.makedirs(tool_path, exist_ok=True)
-
-    # Remove symlinks in destination that conflict with source directories
-    # (rsync cannot replace a symlink with a directory)
-    removed = 0
-    if not DRY_RUN and os.path.isdir(tool_path):
-        for name in skill_names:
-            dest = os.path.join(tool_path, name)
-            if os.path.islink(dest):
-                os.remove(dest)
-                removed += 1
-        if removed:
-            print(f"  Removed {removed} conflicting symlinks")
 
     synced = 0
     for name in skill_names:
