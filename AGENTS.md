@@ -32,6 +32,18 @@ Marketplace-installed skills also carry `meta.json` tracking origin/revision.
 
 Cached in `cache/marketplace-skills.json` and `cache/marketplace-skill-descriptions.json`.
 
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/resolve-config.sh` | Substitute `${VAR}` placeholders in config.json from `.env` or environment. Supports `--validate` and `--in-place`. |
+| `scripts/sync-skills.sh` | Sync skills from this central repo to every enabled tool's `skills_path`. Supports `--dry-run`, `--tool <name>`, `--exclude <pattern>`. |
+| `scripts/check-secrets.sh` | Scan config.json for plaintext secrets that should be in `.env` instead. |
+
+## Secrets
+
+Sensitive values (API keys, tokens) live in `.env` (gitignored). `config.json` uses `${VAR_NAME}` placeholders. Run `scripts/resolve-config.sh` to produce a resolved config with actual values.
+
 ## No CI / no tests at root
 
 Individual skills may have their own tests (e.g. `skills/comfyui/tests/`), scripts, and setup. There is no repo-level test/lint/format command.
