@@ -1,0 +1,26 @@
+# project-env skill memory
+# Auto-managed by project-env. Do not edit by hand.
+skill_version: 1
+
+user:
+  # Auto-detected from session count
+  experience_tier: 1
+
+  # Learned tendencies
+  tendencies:
+    always_accepts: []
+    always_skips: []
+    needs_explanation: []
+
+  # Default preferences
+  defaults:
+    model: null
+    permission_bash: "ask"
+    permission_edit: "allow"
+    permission_read: "allow"
+
+  # Per-project knowledge
+  projects: {}
+
+# Chronological session log (last 50 sessions)
+session_log: []

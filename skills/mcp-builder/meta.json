@@ -1,0 +1,16 @@
+{
+  "author": null,
+  "created_at": null,
+  "description": null,
+  "install_url": null,
+  "marketplace_skill_id": "github-direct-https---github-com-anthropics-skills-skills-mcp-builder",
+  "marketplace_skill_slug": "skills/mcp-builder",
+  "marketplace_source_id": "github_direct",
+  "name": "mcp-builder",
+  "remote_revision": "gh-tree-fnv64:70545aa51f01de3b",
+  "repo_url": "https://github.com/anthropics/skills",
+  "skill_path": "skills/mcp-builder",
+  "source": "marketplace",
+  "tags": [],
+  "version": "1.0"
+}
